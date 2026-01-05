@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(tetris C)
+project(instr_timing C)
 
 # Set C standard
 set(CMAKE_C_STANDARD 11)
@@ -15,7 +15,6 @@ find_package(SDL2 REQUIRED)
 add_library(gbrt STATIC
     ${GBRT_DIR}/src/gbrt.c
     ${GBRT_DIR}/src/ppu.c
-    ${GBRT_DIR}/src/audio.c
     ${GBRT_DIR}/src/interpreter.c
     ${GBRT_DIR}/src/platform_sdl.c
 )
@@ -24,10 +23,10 @@ target_link_libraries(gbrt PUBLIC SDL2::SDL2)
 target_compile_definitions(gbrt PUBLIC GB_HAS_SDL2)
 
 # Main executable
-add_executable(tetris
-    tetris_main.c
-    tetris.c
-    tetris_rom.c
+add_executable(instr_timing
+    instr_timing_main.c
+    instr_timing.c
+    instr_timing_rom.c
 )
 
-target_link_libraries(tetris gbrt)
+target_link_libraries(instr_timing gbrt)
