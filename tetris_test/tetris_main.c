@@ -5,10 +5,22 @@
 #include "platform_sdl.h"
 #endif
 #include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 int main(int argc, char* argv[]) {
-    (void)argc; (void)argv;
+    // Parse args
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--trace") == 0) {
+            gbrt_trace_enabled = true;
+            printf("Trace enabled\n");
+        } else if (strcmp(argv[i], "--limit") == 0 && i + 1 < argc) {
+            gbrt_instruction_limit = strtoull(argv[++i], NULL, 10);
+            printf("Instruction limit: %llu\n", (unsigned long long)gbrt_instruction_limit);
+        }
+    }
+
     GBContext* ctx = gb_context_create(NULL);
     if (!ctx) {
         fprintf(stderr, "Failed to create context\n");
@@ -24,9 +36,18 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // Run the game - rendering happens inside gb_halt()
-    tetris_run(ctx);
-
+    // Run the game loop
+    while (1) {
+        gb_run_frame(ctx);
+        if (!gb_platform_poll_events(ctx)) break;
+        if (ctx->frame_done) {
+            const uint32_t* fb = gb_get_framebuffer(ctx);
+            if (fb) gb_platform_render_frame(fb);
+            gb_reset_frame(ctx);
+            ctx->stopped = 0;
+            gb_platform_vsync();
+        }
+    }
     gb_platform_shutdown();
 #else
     // No SDL2 - just run for testing
